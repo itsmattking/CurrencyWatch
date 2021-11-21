@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import me.mking.currencywatch.data.db.dao.DbCurrencyEntityDao
 import me.mking.currencywatch.data.db.entity.DbCurrencyEntity
 
-@Database(entities = [DbCurrencyEntity::class], version = 1)
+@Database(entities = [DbCurrencyEntity::class], version = 2)
 abstract class ExchangeRateDatabase : RoomDatabase() {
     abstract fun currencyEntityDao(): DbCurrencyEntityDao
 }

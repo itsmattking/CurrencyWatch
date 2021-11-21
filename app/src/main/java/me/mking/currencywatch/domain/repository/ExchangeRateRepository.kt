@@ -1,8 +1,9 @@
 package me.mking.currencywatch.domain.repository
 
+import kotlinx.coroutines.flow.Flow
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.entity.ExchangeRateEntity
 
 interface ExchangeRateRepository {
-    suspend fun latest(base: CurrencyEntity): List<ExchangeRateEntity>
+    fun latest(base: CurrencyEntity): Flow<List<ExchangeRateEntity>>
 }

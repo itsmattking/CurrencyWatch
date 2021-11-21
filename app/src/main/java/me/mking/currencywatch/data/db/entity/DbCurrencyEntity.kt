@@ -8,5 +8,6 @@ import androidx.room.PrimaryKey
 data class DbCurrencyEntity(
     @ColumnInfo(name = "name") val name: String,
     @PrimaryKey @ColumnInfo(name = "code") val code: String,
-    @ColumnInfo(name = "isBase") val isBase: Boolean
+    @ColumnInfo(name = "isBase") val isBase: Boolean,
+    @ColumnInfo(name = "isPreferred") val isPreferred: Boolean
 )

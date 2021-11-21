@@ -15,6 +15,12 @@ interface DbCurrencyEntityDao {
     @Query("select * from currency_entities")
     fun availableCurrencies(): Flow<List<DbCurrencyEntity>>
 
+    @Query("select * from currency_entities where isPreferred = 1")
+    fun preferredCurrencyEntities(): Flow<List<DbCurrencyEntity>>
+
+    @Query("update currency_entities set isPreferred = 1 where code = :code")
+    suspend fun updatePreferredCurrencyEntity(code: String)
+
     @Query("select count(*) from currency_entities")
     suspend fun availableCurrencyCount(): Int
 

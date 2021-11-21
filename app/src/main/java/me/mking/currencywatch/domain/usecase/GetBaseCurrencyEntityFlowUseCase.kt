@@ -10,5 +10,5 @@ class GetBaseCurrencyEntityFlowUseCase @Inject constructor(
     private val repository: CurrencyRepository
 ) {
 
-    fun execute(): Flow<CurrencyEntity> = repository.preferredBase().filterNotNull()
+    fun execute(): Flow<CurrencyEntity> = repository.getBaseCurrency().filterNotNull()
 }

@@ -4,7 +4,9 @@ import kotlinx.coroutines.flow.Flow
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 
 interface CurrencyRepository {
-    fun available(): Flow<List<CurrencyEntity>>
-    fun preferredBase(): Flow<CurrencyEntity>
-    suspend fun setPreferredBase(currencyEntity: CurrencyEntity)
+    fun availableCurrencies(): Flow<List<CurrencyEntity>>
+    fun getBaseCurrency(): Flow<CurrencyEntity>
+    suspend fun setBaseCurrency(currencyEntity: CurrencyEntity)
+    fun getPreferredCurrencies(): Flow<List<CurrencyEntity>>
+    suspend fun setPreferredCurrency(currencyEntity: CurrencyEntity)
 }

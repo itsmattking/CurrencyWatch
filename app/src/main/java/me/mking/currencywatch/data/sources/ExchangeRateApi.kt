@@ -6,7 +6,7 @@ import retrofit2.http.Query
 
 interface ExchangeRateApi {
     @GET("latest")
-    suspend fun getLatestRates(@Query("base") baseCurrency: String): ExchangeRateApiResponse.LatestRates
+    suspend fun getLatestRates(@Query("base") baseCurrency: String, @Query("symbols") symbols: String): ExchangeRateApiResponse.LatestRates
     @GET("symbols")
     suspend fun getAvailableCurrencies(): ExchangeRateApiResponse.Currencies
 }

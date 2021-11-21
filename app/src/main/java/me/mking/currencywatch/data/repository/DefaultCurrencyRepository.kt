@@ -14,32 +14,40 @@ class DefaultCurrencyRepository @Inject constructor(
     private val exchangeRateApi: ExchangeRateApi,
     private val dbCurrencyEntityDao: DbCurrencyEntityDao
 ) : CurrencyRepository {
-    override fun available(): Flow<List<CurrencyEntity>> {
-        return dbCurrencyEntityDao.availableCurrencies().flatMapLatest {
-            if (it.isNotEmpty()) {
-                flowOf(it)
-            } else {
-                populateAvailableCurrencies()
-                dbCurrencyEntityDao.availableCurrencies()
-            }
-        }.map { mapToCurrencyEntities(it) }
+
+    override fun availableCurrencies(): Flow<List<CurrencyEntity>> {
+        return dbCurrencyEntityDao.availableCurrencies()
+            .cachedCurrenciesFlow { it.isNotEmpty() }
+            .map { mapToCurrencyEntities(it) }
     }
 
-    override fun preferredBase(): Flow<CurrencyEntity> = dbCurrencyEntityDao.baseCurrencyEntity()
-        .flatMapLatest {
-            if (it == null) {
-                populateAvailableCurrencies()
-                dbCurrencyEntityDao.baseCurrencyEntity()
-            } else {
-                flowOf(it)
-            }
-        }
+    override fun getBaseCurrency(): Flow<CurrencyEntity> = dbCurrencyEntityDao.baseCurrencyEntity()
+        .cachedCurrenciesFlow { it != null }
         .filterNotNull()
         .map(::mapToCurrencyEntity)
 
-    override suspend fun setPreferredBase(currencyEntity: CurrencyEntity) {
+    override suspend fun setBaseCurrency(currencyEntity: CurrencyEntity) {
         dbCurrencyEntityDao.clearBaseCurrencies()
         dbCurrencyEntityDao.updateBaseCurrencyEntity(currencyEntity.code)
+    }
+
+    override fun getPreferredCurrencies(): Flow<List<CurrencyEntity>> {
+        return dbCurrencyEntityDao.preferredCurrencyEntities()
+            .cachedCurrenciesFlow { it.isNotEmpty() }
+            .map { mapToCurrencyEntities(it) }
+    }
+
+    override suspend fun setPreferredCurrency(currencyEntity: CurrencyEntity) {
+        dbCurrencyEntityDao.updatePreferredCurrencyEntity(currencyEntity.code)
+    }
+
+    private fun <T> Flow<T>.cachedCurrenciesFlow(useCache: (T) -> Boolean) = flatMapLatest {
+        if (useCache.invoke(it)) {
+            flowOf(it)
+        } else {
+            populateAvailableCurrencies()
+            this
+        }
     }
 
     private fun mapToCurrencyEntities(dbEntities: List<DbCurrencyEntity>) =
@@ -48,7 +56,8 @@ class DefaultCurrencyRepository @Inject constructor(
     private fun mapToCurrencyEntity(dbEntity: DbCurrencyEntity) = CurrencyEntity(
         name = dbEntity.name,
         code = dbEntity.code,
-        isBase = dbEntity.isBase
+        isBase = dbEntity.isBase,
+        isPreferred = dbEntity.isPreferred
     )
 
     private suspend fun populateAvailableCurrencies() {
@@ -57,7 +66,8 @@ class DefaultCurrencyRepository @Inject constructor(
             DbCurrencyEntity(
                 name = it.value["description"]!!,
                 code = it.value["code"]!!,
-                isBase = it.value["code"] == "GBP"
+                isBase = it.value["code"] == "GBP",
+                isPreferred = it.value["code"] == "USD" || it.value["code"] == "EUR"
             )
         }.toTypedArray())
         if (dbCurrencyEntityDao.availableCurrencyCount() == 0) {

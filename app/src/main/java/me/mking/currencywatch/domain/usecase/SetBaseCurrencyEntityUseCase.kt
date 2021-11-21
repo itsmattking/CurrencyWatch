@@ -8,6 +8,6 @@ class SetBaseCurrencyEntityUseCase @Inject constructor(
     private val currencyRepository: CurrencyRepository
 ) {
     suspend fun execute(currencyEntity: CurrencyEntity) {
-        currencyRepository.setPreferredBase(currencyEntity)
+        currencyRepository.setBaseCurrency(currencyEntity)
     }
 }
