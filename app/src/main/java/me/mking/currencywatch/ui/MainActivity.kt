@@ -10,17 +10,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,7 +31,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.ui.theme.CurrencyWatchTheme
-import java.math.BigDecimal
+import java.lang.Integer.max
+import java.text.DecimalFormat
 
 @FlowPreview
 @AndroidEntryPoint
@@ -104,7 +106,12 @@ fun MainActivityScreen(
                                     }
                                     it.text.toDoubleOrNull() == null -> textState.value
                                     else -> {
-                                        val newValue = it.text.trim().take(16)
+                                        val newValue = it.text.trim()
+                                            .replace("[^0-9.]".toRegex(), "")
+                                            .take(13)
+                                            .replace(
+                                                "\\.([0-9]{1,2}).*?$".toRegex(), ".$1"
+                                            )
                                         baseAmount.invoke(newValue.toDouble())
                                         it.copy(newValue)
                                     }
@@ -135,7 +142,8 @@ fun MainActivityScreen(
                                     )
                                     innerTextField()
                                 }
-                            }
+                            },
+                            visualTransformation = CurrencyTransformation()
                         )
                     }
 
@@ -155,19 +163,72 @@ fun MainActivityScreen(
     }
 }
 
+class CurrencyTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        if (text.text.isBlank()) {
+            return TransformedText(text, OffsetMapping.Identity)
+        }
+        val split = text.text.split(".")
+        val prefix = split.first()
+        val suffix = split.getOrElse(1) { "" }
+        val containsDecimal = text.text.contains(".")
+
+        val output = DecimalFormat("#,###").format(prefix.toDouble())
+        val difference = (output.length - text.length) + when {
+            suffix.isNotBlank() -> suffix.length + 1
+            containsDecimal -> 1
+            else -> 0
+        }
+        return TransformedText(
+            AnnotatedString(
+                output + when {
+                    suffix.isNotBlank() -> ".$suffix"
+                    containsDecimal -> "."
+                    else -> ""
+                }
+            ),
+            CurrencyOffsetMapping(difference)
+        )
+    }
+
+    private class CurrencyOffsetMapping(private val offsetDifference: Int) : OffsetMapping {
+        override fun originalToTransformed(offset: Int): Int {
+            return max(0, offset + offsetDifference)
+        }
+
+        override fun transformedToOriginal(offset: Int): Int {
+            return max(0, offset - offsetDifference)
+        }
+    }
+}
+
 @Composable
 fun ExchangeRateRow(rate: LatestExchangeRatesViewData.ExchangeRate, onClick: (String) -> Unit) {
     Row {
-        ClickableText(
-            text = AnnotatedString(rate.name),
-            modifier = Modifier.weight(.2f),
-            onClick = {
-                onClick.invoke(rate.name)
-            })
         Text(
-            "${rate.symbol} ${String.format("%.2f", rate.value)}", modifier = Modifier
+            text = rate.name,
+            modifier = Modifier
+                .weight(.12f)
+                .align(Alignment.CenterVertically),
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.DarkGray
+        )
+        Text(
+            text = rate.rate,
+            modifier = Modifier
+                .weight(.2f)
+                .align(Alignment.CenterVertically),
+            color = Color.Gray,
+        )
+        Text(
+            "${rate.symbol} ${rate.value}",
+            modifier = Modifier
                 .fillMaxWidth()
-                .weight(.8f),
+                .weight(.6f)
+                .align(Alignment.CenterVertically),
+            fontSize = 24.sp,
+            color = Color.DarkGray,
             textAlign = TextAlign.End
         )
     }
@@ -183,7 +244,7 @@ fun DefaultPreview() {
                     data = LatestExchangeRatesViewData(
                         base = CurrencyEntity("GBP", "GBP", true),
                         rates = listOf(
-                            LatestExchangeRatesViewData.ExchangeRate("USD", "$", 1.285)
+                            LatestExchangeRatesViewData.ExchangeRate("USD", "1.28", "$", "1.28")
                         ),
                         baseAmount = 0.00,
                         baseCurrencySymbol = "£"

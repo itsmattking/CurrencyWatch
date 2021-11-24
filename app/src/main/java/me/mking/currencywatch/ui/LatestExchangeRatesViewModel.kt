@@ -8,7 +8,9 @@ import kotlinx.coroutines.launch
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.usecase.GetBaseCurrencyEntityFlowUseCase
 import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesUseCase
+import okhttp3.internal.format
 import java.math.BigDecimal
+import java.text.DecimalFormat
 import java.util.*
 import javax.inject.Inject
 
@@ -38,8 +40,12 @@ class LatestExchangeRatesViewModel @Inject constructor(
                     rates = result.rates.map {
                         LatestExchangeRatesViewData.ExchangeRate(
                             name = it.name,
+                            rate = String.format("%,.2f", it.rate),
                             symbol = mapToCurrencySymbol(it.name),
-                            value = BigDecimal(it.rate * base).setScale(3, BigDecimal.ROUND_DOWN).toDouble()
+                            value = String.format("%,.2f",
+                                BigDecimal(it.rate * base).setScale(2, BigDecimal.ROUND_UP)
+                                    .toDouble()
+                            )
                         )
                     }
                 )
@@ -49,7 +55,7 @@ class LatestExchangeRatesViewModel @Inject constructor(
     }
 
     fun setBaseAmount(baseAmount: Double) = viewModelScope.launch {
-        _baseAmountFlow.emit(BigDecimal(baseAmount).setScale(2, BigDecimal.ROUND_DOWN).toDouble())
+        _baseAmountFlow.emit(BigDecimal(baseAmount).setScale(2, BigDecimal.ROUND_UP).toDouble())
     }
 
     private fun mapToCurrencySymbol(code: String): String {
@@ -66,7 +72,8 @@ data class LatestExchangeRatesViewData(
 ) : ViewData {
     data class ExchangeRate(
         val name: String,
+        val rate: String,
         val symbol: String,
-        val value: Double
+        val value: String
     )
 }
