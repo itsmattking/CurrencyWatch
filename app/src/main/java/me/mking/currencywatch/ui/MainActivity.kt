@@ -95,7 +95,16 @@ fun MainActivityScreen(
                 ) {
                     Row(Modifier.padding(horizontal = 16.dp)) {
                         val textState =
-                            remember { mutableStateOf(TextFieldValue(String.format("%.2f", currentState.data.baseAmount))) }
+                            remember {
+                                mutableStateOf(
+                                    TextFieldValue(
+                                        String.format(
+                                            "%,.3f",
+                                            currentState.data.baseAmount
+                                        )
+                                    )
+                                )
+                            }
                         BasicTextField(
                             value = textState.value,
                             onValueChange = {
@@ -110,7 +119,7 @@ fun MainActivityScreen(
                                             .replace("[^0-9.]".toRegex(), "")
                                             .take(13)
                                             .replace(
-                                                "\\.([0-9]{1,2}).*?$".toRegex(), ".$1"
+                                                "\\.([0-9]{1,3}).*?$".toRegex(), ".$1"
                                             )
                                         baseAmount.invoke(newValue.toDouble())
                                         it.copy(newValue)

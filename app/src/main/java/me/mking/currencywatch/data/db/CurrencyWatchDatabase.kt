@@ -6,6 +6,6 @@ import me.mking.currencywatch.data.db.dao.DbCurrencyEntityDao
 import me.mking.currencywatch.data.db.entity.DbCurrencyEntity
 
 @Database(entities = [DbCurrencyEntity::class], version = 2)
-abstract class ExchangeRateDatabase : RoomDatabase() {
+abstract class CurrencyWatchDatabase : RoomDatabase() {
     abstract fun currencyEntityDao(): DbCurrencyEntityDao
 }

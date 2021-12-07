@@ -1,7 +1,10 @@
 package me.mking.currencywatch.data.repository
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.map
+import me.mking.currencywatch.data.backfilledWith
 import me.mking.currencywatch.data.db.dao.DbCurrencyEntityDao
 import me.mking.currencywatch.data.db.entity.DbCurrencyEntity
 import me.mking.currencywatch.data.sources.ExchangeRateApi
@@ -17,12 +20,12 @@ class DefaultCurrencyRepository @Inject constructor(
 
     override fun availableCurrencies(): Flow<List<CurrencyEntity>> {
         return dbCurrencyEntityDao.availableCurrencies()
-            .cachedCurrenciesFlow { it.isNotEmpty() }
+            .backfilledWith(::populateAvailableCurrencies)
             .map { mapToCurrencyEntities(it) }
     }
 
     override fun getBaseCurrency(): Flow<CurrencyEntity> = dbCurrencyEntityDao.baseCurrencyEntity()
-        .cachedCurrenciesFlow { it != null }
+        .backfilledWith(::populateAvailableCurrencies)
         .filterNotNull()
         .map(::mapToCurrencyEntity)
 
@@ -33,21 +36,12 @@ class DefaultCurrencyRepository @Inject constructor(
 
     override fun getPreferredCurrencies(): Flow<List<CurrencyEntity>> {
         return dbCurrencyEntityDao.preferredCurrencyEntities()
-            .cachedCurrenciesFlow { it.isNotEmpty() }
+            .backfilledWith(::populateAvailableCurrencies)
             .map { mapToCurrencyEntities(it) }
     }
 
     override suspend fun setPreferredCurrency(currencyEntity: CurrencyEntity) {
         dbCurrencyEntityDao.updatePreferredCurrencyEntity(currencyEntity.code)
-    }
-
-    private fun <T> Flow<T>.cachedCurrenciesFlow(useCache: (T) -> Boolean) = flatMapLatest {
-        if (useCache.invoke(it)) {
-            flowOf(it)
-        } else {
-            populateAvailableCurrencies()
-            this
-        }
     }
 
     private fun mapToCurrencyEntities(dbEntities: List<DbCurrencyEntity>) =

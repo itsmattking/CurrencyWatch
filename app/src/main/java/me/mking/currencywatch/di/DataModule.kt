@@ -7,7 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import me.mking.currencywatch.data.db.ExchangeRateDatabase
+import me.mking.currencywatch.data.db.CurrencyWatchDatabase
 import me.mking.currencywatch.data.repository.DefaultCurrencyRepository
 import me.mking.currencywatch.data.repository.DefaultExchangeRateRepository
 import me.mking.currencywatch.data.sources.ExchangeRateApi
@@ -38,10 +38,10 @@ class DataModule {
     @Singleton
     fun exchangeRateDatabase(@ApplicationContext context: Context) = Room.databaseBuilder(
         context,
-        ExchangeRateDatabase::class.java, "exchange-rate-db"
+        CurrencyWatchDatabase::class.java, "exchange-rate-db"
     ).fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton
-    fun dbCurrencyEntityDao(db: ExchangeRateDatabase) = db.currencyEntityDao()
+    fun dbCurrencyEntityDao(db: CurrencyWatchDatabase) = db.currencyEntityDao()
 }
