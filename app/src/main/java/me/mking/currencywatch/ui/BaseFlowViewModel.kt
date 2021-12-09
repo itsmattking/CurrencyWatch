@@ -3,6 +3,7 @@ package me.mking.currencywatch.ui
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 
 abstract class BaseFlowViewModel<T : ViewData> : ViewModel() {
@@ -18,9 +19,11 @@ abstract class BaseFlowViewModel<T : ViewData> : ViewModel() {
 
     private suspend fun collectLatestFlowIntoState(flowBlock: () -> Flow<T>) {
         try {
-            flowBlock.invoke().collectLatest {
-                mutableState.emit(ViewState.Ready(it))
-            }
+            flowBlock.invoke()
+                .catch { mutableState.emit(ViewState.Error(it)) }
+                .collectLatest {
+                    mutableState.emit(ViewState.Ready(it))
+                }
         } catch (exception: Exception) {
             mutableState.emit(ViewState.Error(exception))
         }

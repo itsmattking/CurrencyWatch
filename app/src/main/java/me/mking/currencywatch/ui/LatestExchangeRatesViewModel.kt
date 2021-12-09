@@ -8,7 +8,7 @@ import kotlinx.coroutines.launch
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.usecase.GetBaseCurrencyEntityFlowUseCase
 import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesUseCase
-import java.math.BigDecimal
+import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataMapper
 import java.util.*
 import javax.inject.Inject
 
@@ -16,11 +16,12 @@ import javax.inject.Inject
 @HiltViewModel
 class LatestExchangeRatesViewModel @Inject constructor(
     private val getBaseCurrencyEntityFlowUseCase: GetBaseCurrencyEntityFlowUseCase,
-    private val getLatestExchangeRatesUseCase: GetLatestExchangeRatesUseCase
+    private val getLatestExchangeRatesUseCase: GetLatestExchangeRatesUseCase,
+    private val latestExchangeRatesViewDataMapper: LatestExchangeRatesViewDataMapper
 ) : BaseFlowViewModel<LatestExchangeRatesViewData>() {
 
-    private val _baseAmountFlow: MutableStateFlow<Double> = MutableStateFlow(0.00)
-    private val baseAmountFlow: StateFlow<Double> = _baseAmountFlow
+    private val _baseAmountFlow: MutableStateFlow<String> = MutableStateFlow("0.00")
+    private val baseAmountFlow: StateFlow<String> = _baseAmountFlow
 
     fun load() = viewModelScope.launch {
         loadLatestFlowIntoState {
@@ -29,44 +30,24 @@ class LatestExchangeRatesViewModel @Inject constructor(
                 getBaseCurrencyEntityFlowUseCase.execute()
                     .stateIn(this, SharingStarted.Lazily, CurrencyEntity.EMPTY)
                     .dropWhile { it == CurrencyEntity.EMPTY }
-                    .flatMapConcat(getLatestExchangeRatesUseCase::execute)
-            ) { base, result ->
-                LatestExchangeRatesViewData(
-                    base = result.base,
-                    baseAmount = base,
-                    baseCurrencySymbol = mapToCurrencySymbol(result.base.code),
-                    rates = result.rates.map {
-                        LatestExchangeRatesViewData.ExchangeRate(
-                            name = it.name,
-                            rate = String.format("%,.3f", it.rate),
-                            symbol = mapToCurrencySymbol(it.name),
-                            value = String.format(
-                                "%,.3f",
-                                BigDecimal(it.rate * base).setScale(3, BigDecimal.ROUND_HALF_UP)
-                                    .toDouble()
-                            )
-                        )
-                    }
-                )
-            }
+                    .flatMapConcat(getLatestExchangeRatesUseCase::execute),
 
+            ) { base, result ->
+                latestExchangeRatesViewDataMapper.map(Pair(base, result))
+            }
         }
     }
 
-    fun setBaseAmount(baseAmount: Double) = viewModelScope.launch {
+    fun setBaseAmount(baseAmount: String) = viewModelScope.launch {
         _baseAmountFlow.emit(
-            BigDecimal(baseAmount).setScale(3, BigDecimal.ROUND_HALF_UP).toDouble()
+            baseAmount
         )
-    }
-
-    private fun mapToCurrencySymbol(code: String): String {
-        return Currency.getInstance(code).getSymbol(Locale.getDefault())
     }
 }
 
 data class LatestExchangeRatesViewData(
-    val base: CurrencyEntity,
-    val baseAmount: Double,
+    val baseCurrency: CurrencyEntity,
+    val baseAmount: String,
     val baseCurrencySymbol: String,
     val rates: List<ExchangeRate>,
     val isReloading: Boolean = false

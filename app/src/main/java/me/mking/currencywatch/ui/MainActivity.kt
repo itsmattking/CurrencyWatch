@@ -70,7 +70,7 @@ fun ContainerScreen(
 @Composable
 fun MainActivityScreen(
     state: State<ViewState<LatestExchangeRatesViewData>>,
-    baseAmount: (Double) -> Unit
+    baseAmount: (String) -> Unit
 ) {
     ContainerScreen {
         Row(
@@ -98,10 +98,7 @@ fun MainActivityScreen(
                             remember {
                                 mutableStateOf(
                                     TextFieldValue(
-                                        String.format(
-                                            "%,.3f",
-                                            currentState.data.baseAmount
-                                        )
+                                        currentState.data.baseAmount
                                     )
                                 )
                             }
@@ -110,7 +107,7 @@ fun MainActivityScreen(
                             onValueChange = {
                                 textState.value = when {
                                     it.text.isBlank() -> {
-                                        baseAmount.invoke(0.00)
+                                        baseAmount.invoke("0.00")
                                         it
                                     }
                                     it.text.toDoubleOrNull() == null -> textState.value
@@ -121,7 +118,7 @@ fun MainActivityScreen(
                                             .replace(
                                                 "\\.([0-9]{1,3}).*?$".toRegex(), ".$1"
                                             )
-                                        baseAmount.invoke(newValue.toDouble())
+                                        baseAmount.invoke(newValue)
                                         it.copy(newValue)
                                     }
                                 }
@@ -251,11 +248,11 @@ fun DefaultPreview() {
             state = produceState(
                 initialValue = ViewState.Ready(
                     data = LatestExchangeRatesViewData(
-                        base = CurrencyEntity("GBP", "GBP", true),
+                        baseCurrency = CurrencyEntity("GBP", "GBP", true),
                         rates = listOf(
                             LatestExchangeRatesViewData.ExchangeRate("USD", "1.28", "$", "1.28")
                         ),
-                        baseAmount = 0.00,
+                        baseAmount = "0.00",
                         baseCurrencySymbol = "£"
                     )
                 ),
