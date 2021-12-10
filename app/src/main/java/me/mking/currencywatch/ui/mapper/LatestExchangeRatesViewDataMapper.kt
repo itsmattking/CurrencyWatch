@@ -1,6 +1,6 @@
 package me.mking.currencywatch.ui.mapper
 
-import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesResult
+import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesUseCaseResult
 import me.mking.currencywatch.ui.ExchangeRateClickEvent
 import me.mking.currencywatch.ui.LatestExchangeRatesViewData
 import java.math.BigDecimal
@@ -39,5 +39,5 @@ class LatestExchangeRatesViewDataMapper @Inject constructor() :
 
 data class LatestExchangeRatesViewDataInput(
     val baseAmount: String,
-    val latestExchangeRatesResult: GetLatestExchangeRatesResult
+    val latestExchangeRatesUseCaseResult: GetLatestExchangeRatesUseCaseResult
 ) : ViewDataMapperInput

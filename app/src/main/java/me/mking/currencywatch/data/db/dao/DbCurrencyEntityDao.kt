@@ -3,8 +3,10 @@ package me.mking.currencywatch.data.db.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import me.mking.currencywatch.data.db.entity.DbCurrencyEntity
+import me.mking.currencywatch.domain.entity.CurrencyEntity
 
 @Dao
 interface DbCurrencyEntityDao {
@@ -18,9 +20,6 @@ interface DbCurrencyEntityDao {
     @Query("select * from currency_entities where isPreferred = 1")
     fun preferredCurrencyEntities(): Flow<List<DbCurrencyEntity>>
 
-    @Query("update currency_entities set isPreferred = 1, isBase = 0 where code = :code")
-    suspend fun updatePreferredCurrencyEntity(code: String)
-
     @Query("update currency_entities set isPreferred = 1, isBase = 0 where isBase = 1")
     suspend fun swapBaseAsPreferred()
 
@@ -30,8 +29,8 @@ interface DbCurrencyEntityDao {
     @Query("update currency_entities set isBase = 0")
     suspend fun clearBaseCurrencies()
 
-    @Query("update currency_entities set isBase = 1, isPreferred = 0 where code = :code")
-    suspend fun updateBaseCurrencyEntity(code: String)
+    @Update
+    suspend fun updateCurrencyEntity(currencyEntity: DbCurrencyEntity)
 
     @Insert
     suspend fun insert(vararg dbCurrencyEntity: DbCurrencyEntity)

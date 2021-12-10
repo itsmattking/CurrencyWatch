@@ -5,9 +5,12 @@ import javax.inject.Inject
 
 class SetBaseCurrencyEntityUseCase @Inject constructor(
     private val currencyRepository: CurrencyRepository
-) {
-    suspend fun execute(code: String) {
-        val currencyEntity = currencyRepository.getCurrencyByCode(code)
-        currencyRepository.setBaseCurrency(currencyEntity)
+) : NoOutputUseCase<SetBaseCurrencyEntityUseCaseInput> {
+    override suspend fun execute(input: SetBaseCurrencyEntityUseCaseInput) {
+        currencyRepository.setBaseCurrency(currencyRepository.getCurrencyByCode(input.code))
     }
 }
+
+data class SetBaseCurrencyEntityUseCaseInput(
+    val code: String
+) : UseCaseInput

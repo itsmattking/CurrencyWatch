@@ -6,28 +6,28 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 
 @ExperimentalCoroutinesApi
-class BackfilledFlow<T>(val flow: Flow<T>) {
+class BackFilledFlow<T>(val flow: Flow<T>) {
     var isNotEmpty: ((T) -> Boolean)? = null
-    var backfillBlock: (suspend () -> Unit)? = null
+    var backFillBlock: (suspend () -> Unit)? = null
 
     fun toFlow(): Flow<T> = flow.flatMapLatest {
         if (isNotEmpty?.invoke(it) == true) {
             flowOf(it)
         } else {
-            backfillBlock?.invoke()
+            backFillBlock?.invoke()
             flow
         }
     }
 }
 
 @ExperimentalCoroutinesApi
-inline fun <reified T> Flow<T>.backfilledWith(noinline backfillBlock: suspend () -> Unit) =
-    BackfilledFlow(this).apply {
+inline fun <reified T> Flow<T>.backFilledWith(noinline backFillBlock: suspend () -> Unit) =
+    BackFilledFlow(this).apply {
         isNotEmpty = {
             when (it) {
                 is List<*> -> it.isNotEmpty()
                 else -> it != null
             }
         }
-        this.backfillBlock = backfillBlock
+        this.backFillBlock = backFillBlock
     }.toFlow()

@@ -14,12 +14,12 @@ import javax.inject.Inject
 class GetLatestExchangeRatesUseCase @Inject constructor(
     private val exchangeRateRepository: ExchangeRateRepository,
     private val currencyRepository: CurrencyRepository
-) : FlowUseCase<GetLatestExchangeRatesInput, GetLatestExchangeRatesResult> {
+) : FlowUseCase<GetLatestExchangeRatesInput, GetLatestExchangeRatesUseCaseResult> {
 
-    override fun execute(input: GetLatestExchangeRatesInput): Flow<GetLatestExchangeRatesResult> =
+    override fun execute(input: GetLatestExchangeRatesInput): Flow<GetLatestExchangeRatesUseCaseResult> =
         currencyRepository.getPreferredCurrencies().flatMapConcat {
             exchangeRateRepository.latest(input.baseCurrencyEntity, it).map { rates ->
-                GetLatestExchangeRatesResult(
+                GetLatestExchangeRatesUseCaseResult(
                     baseCurrencyEntity = input.baseCurrencyEntity,
                     rates = rates
                 )
@@ -27,7 +27,7 @@ class GetLatestExchangeRatesUseCase @Inject constructor(
         }
 }
 
-data class GetLatestExchangeRatesResult(
+data class GetLatestExchangeRatesUseCaseResult(
     val baseCurrencyEntity: CurrencyEntity,
     val rates: List<ExchangeRateEntity>
 ) : UseCaseResult

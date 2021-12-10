@@ -3,15 +3,19 @@ package me.mking.currencywatch.domain.usecase
 import kotlinx.coroutines.flow.Flow
 
 interface UseCase<S : UseCaseInput, T : UseCaseResult> {
-    fun execute(input: S): T
+    suspend fun execute(input: S): T
+}
+
+interface NoInputUseCase<T : UseCaseResult> {
+    suspend fun execute(): T
+}
+
+interface NoOutputUseCase<S : UseCaseInput> {
+    suspend fun execute(input: S)
 }
 
 interface FlowUseCase<S : UseCaseInput, T : UseCaseResult> {
     fun execute(input: S): Flow<T>
-}
-
-interface NoInputUseCase<T : UseCaseResult> {
-    fun execute(): T
 }
 
 interface FlowNoInputUseCase<T : UseCaseResult> {

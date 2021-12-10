@@ -30,8 +30,8 @@ class LatestExchangeRatesViewModel @Inject constructor(
             combine(
                 baseAmountFlow,
                 getBaseCurrencyEntityFlowUseCase.execute()
-                    .stateIn(this, SharingStarted.Lazily, GetBaseCurrencyEntityResult.EMPTY)
-                    .dropWhile { it == GetBaseCurrencyEntityResult.EMPTY }
+                    .stateIn(this, SharingStarted.Lazily, GetBaseCurrencyEntityFlowUseCaseResult.EMPTY)
+                    .dropWhile { it == GetBaseCurrencyEntityFlowUseCaseResult.EMPTY }
                     .map { GetLatestExchangeRatesInput(it.baseCurrencyEntity) }
                     .flatMapLatest(getLatestExchangeRatesUseCase::execute)
             ) { baseAmount, latestExchangeRatesResult ->
@@ -50,7 +50,7 @@ class LatestExchangeRatesViewModel @Inject constructor(
     }
 
     fun setBaseCurrency(code: String) = viewModelScope.launch {
-        setBaseCurrencyEntityUseCase.execute(code)
+        setBaseCurrencyEntityUseCase.execute(SetBaseCurrencyEntityUseCaseInput(code))
     }
 }
 

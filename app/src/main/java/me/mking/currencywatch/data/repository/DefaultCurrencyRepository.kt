@@ -4,7 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
-import me.mking.currencywatch.data.backfilledWith
+import me.mking.currencywatch.data.backFilledWith
 import me.mking.currencywatch.data.db.dao.DbCurrencyEntityDao
 import me.mking.currencywatch.data.db.entity.DbCurrencyEntity
 import me.mking.currencywatch.data.sources.ExchangeRateApi
@@ -20,28 +20,36 @@ class DefaultCurrencyRepository @Inject constructor(
 
     override fun availableCurrencies(): Flow<List<CurrencyEntity>> {
         return dbCurrencyEntityDao.availableCurrencies()
-            .backfilledWith(::populateAvailableCurrencies)
+            .backFilledWith(::populateAvailableCurrencies)
             .map { mapToCurrencyEntities(it) }
     }
 
     override fun getBaseCurrency(): Flow<CurrencyEntity> = dbCurrencyEntityDao.baseCurrencyEntity()
-        .backfilledWith(::populateAvailableCurrencies)
+        .backFilledWith(::populateAvailableCurrencies)
         .filterNotNull()
         .map(::mapToCurrencyEntity)
 
     override suspend fun setBaseCurrency(currencyEntity: CurrencyEntity) {
         dbCurrencyEntityDao.swapBaseAsPreferred()
-        dbCurrencyEntityDao.updateBaseCurrencyEntity(currencyEntity.code)
+        dbCurrencyEntityDao.updateCurrencyEntity(
+            dbCurrencyEntityDao.getCurrencyEntityByCode(
+                currencyEntity.code
+            ).copy(isBase = true, isPreferred = false)
+        )
     }
 
     override fun getPreferredCurrencies(): Flow<List<CurrencyEntity>> {
         return dbCurrencyEntityDao.preferredCurrencyEntities()
-            .backfilledWith(::populateAvailableCurrencies)
+            .backFilledWith(::populateAvailableCurrencies)
             .map { mapToCurrencyEntities(it) }
     }
 
     override suspend fun setPreferredCurrency(currencyEntity: CurrencyEntity) {
-        dbCurrencyEntityDao.updatePreferredCurrencyEntity(currencyEntity.code)
+        dbCurrencyEntityDao.updateCurrencyEntity(
+            dbCurrencyEntityDao.getCurrencyEntityByCode(
+                currencyEntity.code
+            ).copy(isBase = false, isPreferred = true)
+        )
     }
 
     override suspend fun getCurrencyByCode(code: String): CurrencyEntity {

@@ -8,17 +8,17 @@ import javax.inject.Inject
 
 class GetBaseCurrencyEntityFlowUseCase @Inject constructor(
     private val repository: CurrencyRepository
-) : FlowNoInputUseCase<GetBaseCurrencyEntityResult> {
+) : FlowNoInputUseCase<GetBaseCurrencyEntityFlowUseCaseResult> {
 
     override fun execute() = repository.getBaseCurrency().filterNotNull().map {
-        GetBaseCurrencyEntityResult(it)
+        GetBaseCurrencyEntityFlowUseCaseResult(it)
     }
 }
 
-data class GetBaseCurrencyEntityResult(
+data class GetBaseCurrencyEntityFlowUseCaseResult(
     val baseCurrencyEntity: CurrencyEntity
 ) : UseCaseResult {
     companion object {
-        val EMPTY = GetBaseCurrencyEntityResult(CurrencyEntity.EMPTY)
+        val EMPTY = GetBaseCurrencyEntityFlowUseCaseResult(CurrencyEntity.EMPTY)
     }
 }
