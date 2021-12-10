@@ -5,5 +5,8 @@ import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.entity.ExchangeRateEntity
 
 interface ExchangeRateRepository {
-    fun latest(base: CurrencyEntity): Flow<List<ExchangeRateEntity>>
+    fun latest(
+        baseCurrencyEntity: CurrencyEntity,
+        preferredCurrencies: List<CurrencyEntity>
+    ): Flow<List<ExchangeRateEntity>>
 }

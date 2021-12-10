@@ -7,9 +7,11 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.usecase.GetBaseCurrencyEntityFlowUseCase
+import me.mking.currencywatch.domain.usecase.GetBaseCurrencyEntityResult
+import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesInput
 import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesUseCase
+import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataInput
 import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataMapper
-import java.util.*
 import javax.inject.Inject
 
 @FlowPreview
@@ -28,20 +30,23 @@ class LatestExchangeRatesViewModel @Inject constructor(
             combine(
                 baseAmountFlow,
                 getBaseCurrencyEntityFlowUseCase.execute()
-                    .stateIn(this, SharingStarted.Lazily, CurrencyEntity.EMPTY)
-                    .dropWhile { it == CurrencyEntity.EMPTY }
+                    .stateIn(this, SharingStarted.Lazily, GetBaseCurrencyEntityResult.EMPTY)
+                    .dropWhile { it == GetBaseCurrencyEntityResult.EMPTY }
+                    .map { GetLatestExchangeRatesInput(it.baseCurrencyEntity) }
                     .flatMapConcat(getLatestExchangeRatesUseCase::execute),
-
-            ) { base, result ->
-                latestExchangeRatesViewDataMapper.map(Pair(base, result))
+            ) { baseAmount, latestExchangeRatesResult ->
+                latestExchangeRatesViewDataMapper.map(
+                    LatestExchangeRatesViewDataInput(
+                        baseAmount,
+                        latestExchangeRatesResult
+                    )
+                )
             }
         }
     }
 
     fun setBaseAmount(baseAmount: String) = viewModelScope.launch {
-        _baseAmountFlow.emit(
-            baseAmount
-        )
+        _baseAmountFlow.emit(baseAmount)
     }
 }
 

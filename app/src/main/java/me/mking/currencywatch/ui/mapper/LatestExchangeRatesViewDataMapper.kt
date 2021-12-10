@@ -7,15 +7,15 @@ import java.util.*
 import javax.inject.Inject
 
 class LatestExchangeRatesViewDataMapper @Inject constructor() :
-    ViewDataMapper<Pair<String, GetLatestExchangeRatesResult>, LatestExchangeRatesViewData> {
-    override fun map(input: Pair<String, GetLatestExchangeRatesResult>): LatestExchangeRatesViewData {
-        val (base, result) = input
-        val baseDouble = BigDecimal(base).setScale(3, BigDecimal.ROUND_HALF_UP).toDouble()
+    ViewDataMapper<LatestExchangeRatesViewDataInput, LatestExchangeRatesViewData> {
+    override fun map(input: LatestExchangeRatesViewDataInput): LatestExchangeRatesViewData {
+        val (baseAmount, latestExchangeRatesResult) = input
+        val baseDouble = BigDecimal(baseAmount).setScale(3, BigDecimal.ROUND_HALF_UP).toDouble()
         return LatestExchangeRatesViewData(
-            baseCurrency = result.base,
-            baseAmount = base,
-            baseCurrencySymbol = mapToCurrencySymbol(result.base.code),
-            rates = result.rates.map {
+            baseCurrency = latestExchangeRatesResult.base,
+            baseAmount = baseAmount,
+            baseCurrencySymbol = mapToCurrencySymbol(latestExchangeRatesResult.base.code),
+            rates = latestExchangeRatesResult.rates.map {
                 LatestExchangeRatesViewData.ExchangeRate(
                     name = it.name,
                     rate = String.format("%,.3f", it.rate),
@@ -34,3 +34,8 @@ class LatestExchangeRatesViewDataMapper @Inject constructor() :
         return Currency.getInstance(code).getSymbol(Locale.getDefault())
     }
 }
+
+data class LatestExchangeRatesViewDataInput(
+    val baseAmount: String,
+    val latestExchangeRatesResult: GetLatestExchangeRatesResult
+) : ViewDataMapperInput
