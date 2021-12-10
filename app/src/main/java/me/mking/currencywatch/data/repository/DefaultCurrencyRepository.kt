@@ -30,7 +30,7 @@ class DefaultCurrencyRepository @Inject constructor(
         .map(::mapToCurrencyEntity)
 
     override suspend fun setBaseCurrency(currencyEntity: CurrencyEntity) {
-        dbCurrencyEntityDao.clearBaseCurrencies()
+        dbCurrencyEntityDao.swapBaseAsPreferred()
         dbCurrencyEntityDao.updateBaseCurrencyEntity(currencyEntity.code)
     }
 
@@ -42,6 +42,10 @@ class DefaultCurrencyRepository @Inject constructor(
 
     override suspend fun setPreferredCurrency(currencyEntity: CurrencyEntity) {
         dbCurrencyEntityDao.updatePreferredCurrencyEntity(currencyEntity.code)
+    }
+
+    override suspend fun getCurrencyByCode(code: String): CurrencyEntity {
+        return mapToCurrencyEntity(dbCurrencyEntityDao.getCurrencyEntityByCode(code))
     }
 
     private fun mapToCurrencyEntities(dbEntities: List<DbCurrencyEntity>) =

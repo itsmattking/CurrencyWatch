@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.flow
 import me.mking.currencywatch.data.sources.ExchangeRateApi
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.entity.ExchangeRateEntity
-import me.mking.currencywatch.domain.repository.CurrencyRepository
 import me.mking.currencywatch.domain.repository.ExchangeRateRepository
 import javax.inject.Inject
 

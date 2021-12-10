@@ -9,4 +9,5 @@ interface CurrencyRepository {
     suspend fun setBaseCurrency(currencyEntity: CurrencyEntity)
     fun getPreferredCurrencies(): Flow<List<CurrencyEntity>>
     suspend fun setPreferredCurrency(currencyEntity: CurrencyEntity)
+    suspend fun getCurrencyByCode(code: String): CurrencyEntity
 }

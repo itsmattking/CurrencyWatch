@@ -1,6 +1,7 @@
 package me.mking.currencywatch.ui.mapper
 
 import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesResult
+import me.mking.currencywatch.ui.ExchangeRateClickEvent
 import me.mking.currencywatch.ui.LatestExchangeRatesViewData
 import java.math.BigDecimal
 import java.util.*
@@ -12,9 +13,9 @@ class LatestExchangeRatesViewDataMapper @Inject constructor() :
         val (baseAmount, latestExchangeRatesResult) = input
         val baseDouble = BigDecimal(baseAmount).setScale(3, BigDecimal.ROUND_HALF_UP).toDouble()
         return LatestExchangeRatesViewData(
-            baseCurrency = latestExchangeRatesResult.base,
+            baseCurrency = latestExchangeRatesResult.baseCurrencyEntity,
             baseAmount = baseAmount,
-            baseCurrencySymbol = mapToCurrencySymbol(latestExchangeRatesResult.base.code),
+            baseCurrencySymbol = mapToCurrencySymbol(latestExchangeRatesResult.baseCurrencyEntity.code),
             rates = latestExchangeRatesResult.rates.map {
                 LatestExchangeRatesViewData.ExchangeRate(
                     name = it.name,
@@ -24,7 +25,8 @@ class LatestExchangeRatesViewDataMapper @Inject constructor() :
                         "%,.3f",
                         BigDecimal(it.rate * baseDouble).setScale(3, BigDecimal.ROUND_HALF_UP)
                             .toDouble()
-                    )
+                    ),
+                    clickEvent = ExchangeRateClickEvent(it.name)
                 )
             }
         )

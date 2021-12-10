@@ -27,10 +27,12 @@ class DataModule {
     }
 
     @Provides
+    @Singleton
     fun exchangeRateRepository(defaultExchangeRateRepository: DefaultExchangeRateRepository): ExchangeRateRepository =
         defaultExchangeRateRepository
 
     @Provides
+    @Singleton
     fun currencyRepository(defaultCurrencyRepository: DefaultCurrencyRepository): CurrencyRepository =
         defaultCurrencyRepository
 

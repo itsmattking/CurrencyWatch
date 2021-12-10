@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,9 +45,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             CurrencyWatchTheme {
                 Surface(color = MaterialTheme.colors.background) {
-                    MainActivityScreen(viewModel.state.collectAsState()) {
+                    MainActivityScreen(viewModel.state.collectAsState(), {
                         viewModel.setBaseAmount(it)
-                    }
+                    }, { viewModel.setBaseCurrency(it.currencyName) })
                 }
             }
         }
@@ -70,7 +71,8 @@ fun ContainerScreen(
 @Composable
 fun MainActivityScreen(
     state: State<ViewState<LatestExchangeRatesViewData>>,
-    baseAmount: (String) -> Unit
+    onBaseAmountChanged: (String) -> Unit,
+    onExchangeRateClick: (ExchangeRateClickEvent) -> Unit
 ) {
     ContainerScreen {
         Row(
@@ -107,7 +109,7 @@ fun MainActivityScreen(
                             onValueChange = {
                                 textState.value = when {
                                     it.text.isBlank() -> {
-                                        baseAmount.invoke("0.00")
+                                        onBaseAmountChanged.invoke("0.00")
                                         it
                                     }
                                     it.text.toDoubleOrNull() == null -> textState.value
@@ -118,7 +120,7 @@ fun MainActivityScreen(
                                             .replace(
                                                 "\\.([0-9]{1,3}).*?$".toRegex(), ".$1"
                                             )
-                                        baseAmount.invoke(newValue)
+                                        onBaseAmountChanged.invoke(newValue)
                                         it.copy(newValue)
                                     }
                                 }
@@ -160,7 +162,7 @@ fun MainActivityScreen(
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         items(currentState.data.rates) { message ->
-                            ExchangeRateRow(message, { })
+                            ExchangeRateRow(message) { onExchangeRateClick.invoke(message.clickEvent) }
                         }
                     }
                 }
@@ -210,7 +212,7 @@ class CurrencyTransformation : VisualTransformation {
 
 @Composable
 fun ExchangeRateRow(rate: LatestExchangeRatesViewData.ExchangeRate, onClick: (String) -> Unit) {
-    Row {
+    Row(modifier = Modifier.clickable { onClick.invoke(rate.name) }) {
         Text(
             text = rate.name,
             modifier = Modifier
@@ -250,7 +252,7 @@ fun DefaultPreview() {
                     data = LatestExchangeRatesViewData(
                         baseCurrency = CurrencyEntity("GBP", "GBP", true),
                         rates = listOf(
-                            LatestExchangeRatesViewData.ExchangeRate("USD", "1.28", "$", "1.28")
+                            LatestExchangeRatesViewData.ExchangeRate("USD", "1.28", "$", "1.28", ExchangeRateClickEvent("USD"))
                         ),
                         baseAmount = "0.00",
                         baseCurrencySymbol = "£"
@@ -258,7 +260,8 @@ fun DefaultPreview() {
                 ),
                 producer = {}
             ),
-            baseAmount = {}
+            onBaseAmountChanged = {},
+            onExchangeRateClick = {}
         )
     }
 }

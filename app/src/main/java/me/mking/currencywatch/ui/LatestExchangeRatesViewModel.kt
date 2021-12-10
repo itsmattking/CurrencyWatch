@@ -2,23 +2,23 @@ package me.mking.currencywatch.ui
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.mking.currencywatch.domain.entity.CurrencyEntity
-import me.mking.currencywatch.domain.usecase.GetBaseCurrencyEntityFlowUseCase
-import me.mking.currencywatch.domain.usecase.GetBaseCurrencyEntityResult
-import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesInput
-import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesUseCase
+import me.mking.currencywatch.domain.usecase.*
 import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataInput
 import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataMapper
 import javax.inject.Inject
 
+@ExperimentalCoroutinesApi
 @FlowPreview
 @HiltViewModel
 class LatestExchangeRatesViewModel @Inject constructor(
     private val getBaseCurrencyEntityFlowUseCase: GetBaseCurrencyEntityFlowUseCase,
     private val getLatestExchangeRatesUseCase: GetLatestExchangeRatesUseCase,
+    private val setBaseCurrencyEntityUseCase: SetBaseCurrencyEntityUseCase,
     private val latestExchangeRatesViewDataMapper: LatestExchangeRatesViewDataMapper
 ) : BaseFlowViewModel<LatestExchangeRatesViewData>() {
 
@@ -33,7 +33,7 @@ class LatestExchangeRatesViewModel @Inject constructor(
                     .stateIn(this, SharingStarted.Lazily, GetBaseCurrencyEntityResult.EMPTY)
                     .dropWhile { it == GetBaseCurrencyEntityResult.EMPTY }
                     .map { GetLatestExchangeRatesInput(it.baseCurrencyEntity) }
-                    .flatMapConcat(getLatestExchangeRatesUseCase::execute),
+                    .flatMapLatest(getLatestExchangeRatesUseCase::execute)
             ) { baseAmount, latestExchangeRatesResult ->
                 latestExchangeRatesViewDataMapper.map(
                     LatestExchangeRatesViewDataInput(
@@ -48,6 +48,10 @@ class LatestExchangeRatesViewModel @Inject constructor(
     fun setBaseAmount(baseAmount: String) = viewModelScope.launch {
         _baseAmountFlow.emit(baseAmount)
     }
+
+    fun setBaseCurrency(code: String) = viewModelScope.launch {
+        setBaseCurrencyEntityUseCase.execute(code)
+    }
 }
 
 data class LatestExchangeRatesViewData(
@@ -61,6 +65,9 @@ data class LatestExchangeRatesViewData(
         val name: String,
         val rate: String,
         val symbol: String,
-        val value: String
+        val value: String,
+        val clickEvent: ExchangeRateClickEvent
     )
 }
+
+data class ExchangeRateClickEvent(val currencyName: String)

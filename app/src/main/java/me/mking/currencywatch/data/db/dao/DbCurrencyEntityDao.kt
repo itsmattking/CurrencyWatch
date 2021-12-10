@@ -18,8 +18,11 @@ interface DbCurrencyEntityDao {
     @Query("select * from currency_entities where isPreferred = 1")
     fun preferredCurrencyEntities(): Flow<List<DbCurrencyEntity>>
 
-    @Query("update currency_entities set isPreferred = 1 where code = :code")
+    @Query("update currency_entities set isPreferred = 1, isBase = 0 where code = :code")
     suspend fun updatePreferredCurrencyEntity(code: String)
+
+    @Query("update currency_entities set isPreferred = 1, isBase = 0 where isBase = 1")
+    suspend fun swapBaseAsPreferred()
 
     @Query("select count(*) from currency_entities")
     suspend fun availableCurrencyCount(): Int
@@ -27,7 +30,7 @@ interface DbCurrencyEntityDao {
     @Query("update currency_entities set isBase = 0")
     suspend fun clearBaseCurrencies()
 
-    @Query("update currency_entities set isBase = 1 where code = :code")
+    @Query("update currency_entities set isBase = 1, isPreferred = 0 where code = :code")
     suspend fun updateBaseCurrencyEntity(code: String)
 
     @Insert
@@ -35,4 +38,7 @@ interface DbCurrencyEntityDao {
 
     @Query("delete from currency_entities")
     suspend fun clear()
+
+    @Query("select * from currency_entities where code = :code")
+    suspend fun getCurrencyEntityByCode(code: String): DbCurrencyEntity
 }

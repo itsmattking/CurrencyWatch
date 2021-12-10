@@ -18,9 +18,9 @@ class GetLatestExchangeRatesUseCase @Inject constructor(
 
     override fun execute(input: GetLatestExchangeRatesInput): Flow<GetLatestExchangeRatesResult> =
         currencyRepository.getPreferredCurrencies().flatMapConcat {
-            exchangeRateRepository.latest(input.base, it).map { rates ->
+            exchangeRateRepository.latest(input.baseCurrencyEntity, it).map { rates ->
                 GetLatestExchangeRatesResult(
-                    base = input.base,
+                    baseCurrencyEntity = input.baseCurrencyEntity,
                     rates = rates
                 )
             }
@@ -28,10 +28,10 @@ class GetLatestExchangeRatesUseCase @Inject constructor(
 }
 
 data class GetLatestExchangeRatesResult(
-    val base: CurrencyEntity,
+    val baseCurrencyEntity: CurrencyEntity,
     val rates: List<ExchangeRateEntity>
 ) : UseCaseResult
 
 data class GetLatestExchangeRatesInput(
-    val base: CurrencyEntity
+    val baseCurrencyEntity: CurrencyEntity
 ) : UseCaseInput
