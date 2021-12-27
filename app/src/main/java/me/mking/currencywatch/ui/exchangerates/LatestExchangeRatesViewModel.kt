@@ -1,4 +1,4 @@
-package me.mking.currencywatch.ui
+package me.mking.currencywatch.ui.exchangerates
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -8,8 +8,10 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.mking.currencywatch.domain.entity.CurrencyEntity
 import me.mking.currencywatch.domain.usecase.*
-import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataInput
-import me.mking.currencywatch.ui.mapper.LatestExchangeRatesViewDataMapper
+import me.mking.currencywatch.ui.BaseFlowViewModel
+import me.mking.currencywatch.ui.ViewData
+import me.mking.currencywatch.ui.exchangerates.mapper.LatestExchangeRatesViewDataInput
+import me.mking.currencywatch.ui.exchangerates.mapper.LatestExchangeRatesViewDataMapper
 import javax.inject.Inject
 
 @ExperimentalCoroutinesApi

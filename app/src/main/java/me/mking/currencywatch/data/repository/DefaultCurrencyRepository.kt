@@ -1,5 +1,6 @@
 package me.mking.currencywatch.data.repository
 
+import android.util.Log
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filterNotNull
@@ -61,25 +62,31 @@ class DefaultCurrencyRepository @Inject constructor(
 
     private fun mapToCurrencyEntity(dbEntity: DbCurrencyEntity) = CurrencyEntity(
         name = dbEntity.name,
-        code = dbEntity.code,
-        isBase = dbEntity.isBase,
-        isPreferred = dbEntity.isPreferred
+        code = dbEntity.code
     )
 
     private suspend fun populateAvailableCurrencies() {
         val remoteResult = exchangeRateApi.getAvailableCurrencies()
-        dbCurrencyEntityDao.insert(*remoteResult.symbols.map {
-            DbCurrencyEntity(
-                name = it.value["description"]!!,
-                code = it.value["code"]!!,
-                isBase = it.value["code"] == "GBP",
-                isPreferred = it.value["code"] == "USD" || it.value["code"] == "EUR"
-            )
+        dbCurrencyEntityDao.insert(*remoteResult.symbols.mapNotNull {
+            try {
+                DbCurrencyEntity(
+                    name = it.value.getValue("description"),
+                    code = it.value.getValue("code"),
+                    isBase = isDefaultBase(it.value.getValue("code")),
+                    isPreferred = isDefaultPreferred(it.value.getValue("code"))
+                )
+            } catch (exception: NoSuchElementException) {
+                Log.e("Parse fail", "Parsing available currency failed: $exception")
+                null
+            }
         }.toTypedArray())
         if (dbCurrencyEntityDao.availableCurrencyCount() == 0) {
             throw NoCurrenciesException()
         }
     }
+
+    private fun isDefaultPreferred(code: String) = code in setOf("USD", "EUR")
+    private fun isDefaultBase(code: String) = code == "GBP"
 }
 
 class NoCurrenciesException : Exception("No available currencies.")

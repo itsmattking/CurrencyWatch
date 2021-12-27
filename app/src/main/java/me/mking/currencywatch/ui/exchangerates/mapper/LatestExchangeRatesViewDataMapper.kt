@@ -1,8 +1,10 @@
-package me.mking.currencywatch.ui.mapper
+package me.mking.currencywatch.ui.exchangerates.mapper
 
 import me.mking.currencywatch.domain.usecase.GetLatestExchangeRatesUseCaseResult
-import me.mking.currencywatch.ui.ExchangeRateClickEvent
-import me.mking.currencywatch.ui.LatestExchangeRatesViewData
+import me.mking.currencywatch.ui.exchangerates.ExchangeRateClickEvent
+import me.mking.currencywatch.ui.exchangerates.LatestExchangeRatesViewData
+import me.mking.currencywatch.ui.mapper.ViewDataMapper
+import me.mking.currencywatch.ui.mapper.ViewDataMapperInput
 import java.math.BigDecimal
 import java.util.*
 import javax.inject.Inject
