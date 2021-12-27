@@ -82,6 +82,7 @@ dependencies {
     implementation(KotlinX.serialization.json)
     implementation(JakeWharton.retrofit2.converter.kotlinxSerialization)
     implementation(Square.okHttp3.loggingInterceptor)
+    implementation(AndroidX.core.splashscreen)
 
     implementation(AndroidX.room.runtime)
     annotationProcessor(AndroidX.room.compiler)

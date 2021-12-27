@@ -14,6 +14,8 @@ import me.mking.currencywatch.ui.exchangerates.LatestExchangeRatesActivity
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        installSplashScreen()
         startActivity(Intent(this, LatestExchangeRatesActivity::class.java))
+        finish()
     }
 }
