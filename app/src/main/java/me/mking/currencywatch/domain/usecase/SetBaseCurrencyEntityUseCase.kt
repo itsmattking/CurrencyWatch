@@ -11,6 +11,7 @@ class SetBaseCurrencyEntityUseCase @Inject constructor(
     }
 }
 
-data class SetBaseCurrencyEntityUseCaseInput(
+@JvmInline
+value class SetBaseCurrencyEntityUseCaseInput(
     val code: String
 ) : UseCaseInput

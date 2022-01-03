@@ -32,6 +32,7 @@ data class GetLatestExchangeRatesUseCaseResult(
     val rates: List<ExchangeRateEntity>
 ) : UseCaseResult
 
-data class GetLatestExchangeRatesInput(
+@JvmInline
+value class GetLatestExchangeRatesInput(
     val baseCurrencyEntity: CurrencyEntity
 ) : UseCaseInput
